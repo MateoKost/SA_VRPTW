@@ -1,0 +1,3 @@
+EPOCH = 100
+ITER = 200
+TZERO = 80
