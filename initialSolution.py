@@ -5,19 +5,24 @@ def flow(MT_CUSTOMERS, LT_CUSTOMERS, EE_CUSTOMERS, VEHICLE_CAPACITY):
     # initialize routes
     routes = []
 
-    # align MT_CUSTOMERS to new routes
+    # assign MT_CUSTOMERS to new routes
     while len(MT_CUSTOMERS) > 0:
         route, MT_CUSTOMERS = assignMT_CUSTOMERS(MT_CUSTOMERS, VEHICLE_CAPACITY)
         routes.append(route)
 
-    # align LT_CUSTOMERS to routes
-    # while len(LT_CUSTOMERS) > 0:
-    # print(routes[1])
-    route, LT_CUSTOMERS = assignLT_CUSTOMERS(routes[1], LT_CUSTOMERS, VEHICLE_CAPACITY)
-    print(route)
+    # assign LT_CUSTOMERS into existing routes
+    for ri in range(0, len(routes)):
+        route, LT_CUSTOMERS = assignLT_CUSTOMERS(routes[ri], LT_CUSTOMERS, VEHICLE_CAPACITY)
+        print(len(LT_CUSTOMERS))
+        routes[ri] = route
 
+    # assign remaining LT_CUSTOMERS into new routes the way MT_CUSTOMERS were assigned
+    if len(LT_CUSTOMERS) > 0:
+        while len(LT_CUSTOMERS) > 0:
+            route, LT_CUSTOMERS = assignMT_CUSTOMERS(LT_CUSTOMERS, VEHICLE_CAPACITY)
+            routes.append(route)
 
-    # print(routes)
+    print(routes)
 
 
 def assignMT_CUSTOMERS(MT_CUSTOMERS, VEHICLE_CAPACITY):
