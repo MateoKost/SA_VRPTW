@@ -20,7 +20,7 @@ def run(fdata, vehicle_capacity):
     EE_CUSTOMERS = fdata.copy()
 
     # sort customers by windows
-    EE_CUSTOMERS = EE_CUSTOMERS.sort_values(by=['WINDOW_LENGTH'], ascending=True)
+    EE_CUSTOMERS = EE_CUSTOMERS.sort_values(by=['WINDOW_LENGTH', 'READY TIME', 'DUE DATE'], ascending=[True, True, True])
 
     # mt/lt customers
     MT_CUSTOMERS = EE_CUSTOMERS.head(MT_CLIENT_C1)
@@ -39,18 +39,39 @@ def run(fdata, vehicle_capacity):
     route = route.dropna()
 
     # first route
-    RW = 0
+
     TT = 0
     VC = 0
 
     for i in range(0, len(MT_CUSTOMERS)):
         c = MT_CUSTOMERS.iloc[[i]]
         next_VC = VC + c['DEMAND'].values[0]
-        if next_VC > vehicle_capacity:
+
+        RT = c['READY TIME'].values[0]
+        DT = c['DUE DATE'].values[0]
+        CT = c['SERVICE TIME'].values[0]
+
+        # next_ST = c['SERVICE TIME'].values[0]
+
+        if next_VC > vehicle_capacity or TT > DT:
             continue
+
+        # komentarz
+
+        # TT = TT if TT <= RT else RT
+        TT += CT
+        # print(TT)
+        # TT = TT + c['SERVICE TIME'].values[0]
+        # print( TT + c['SERVICE TIME'].values[0])
+        # TT += c['SERVICE TIME'].values[0]
+
         VC = next_VC
         route = pd.concat([route, c], ignore_index=False, axis=0)
 
+
+        # RT = c['READY TIME'].values[0]
+        # TT = TT if TT <= RT else RT
+        # TT += c['SERVICE TIME']
 
     print(route)
 
