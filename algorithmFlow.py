@@ -26,7 +26,7 @@ def run(fdata, vehicle_capacity):
     MT_CUSTOMERS = EE_CUSTOMERS.head(MT_CLIENT_C1)
     LT_CUSTOMERS = EE_CUSTOMERS.tail(LT_CLIENT_C1)
 
-    # retieve Everyone Else
+    # retrieve Everyone Else
     EE_CUSTOMERS.drop(MT_CUSTOMERS.index, axis=0, inplace=True)
     EE_CUSTOMERS.drop(LT_CUSTOMERS.index, axis=0, inplace=True)
 
@@ -40,34 +40,41 @@ def run(fdata, vehicle_capacity):
 
     # first route
 
+    # Total Time
     TT = 0
+    # Vehicle Capacity
     VC = 0
 
     for i in range(0, len(MT_CUSTOMERS)):
+        # get i-th customer
         c = MT_CUSTOMERS.iloc[[i]]
         next_VC = VC + c['DEMAND'].values[0]
 
+        # customers param values
         RT = c['READY TIME'].values[0]
         DT = c['DUE DATE'].values[0]
-        CT = c['SERVICE TIME'].values[0]
+        ST = c['SERVICE TIME'].values[0]
 
         # next_ST = c['SERVICE TIME'].values[0]
 
         if next_VC > vehicle_capacity or TT > DT:
             continue
 
-        # komentarz
+        if TT <= RT:
+            TT = RT
+                
+        TT += ST
 
-        # TT = TT if TT <= RT else RT
-        TT += CT
+        VC = next_VC
+
+        route = pd.concat([route, c], ignore_index=False, axis=0)
+
+
         # print(TT)
+        # TT = TT if TT <= RT else RT
         # TT = TT + c['SERVICE TIME'].values[0]
         # print( TT + c['SERVICE TIME'].values[0])
         # TT += c['SERVICE TIME'].values[0]
-
-        VC = next_VC
-        route = pd.concat([route, c], ignore_index=False, axis=0)
-
 
         # RT = c['READY TIME'].values[0]
         # TT = TT if TT <= RT else RT
