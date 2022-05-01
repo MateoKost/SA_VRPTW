@@ -2,9 +2,10 @@ from Preliminaries import *
 import utils
 import math
 import pandas as pd
+import initialSolution
 
 
-def run(fdata, vehicle_capacity):
+def run(fdata, VEHICLE_CAPACITY):
     # decrease indexes () by 1
     fdata.index -= 1
 
@@ -30,146 +31,14 @@ def run(fdata, vehicle_capacity):
     EE_CUSTOMERS.drop(MT_CUSTOMERS.index, axis=0, inplace=True)
     EE_CUSTOMERS.drop(LT_CUSTOMERS.index, axis=0, inplace=True)
 
-    print(MT_CUSTOMERS)
-    # print(LT_CUSTOMERS)
-    # print(EE_CUSTOMERS)
-
-    # specify new vehicle route
-    route = pd.DataFrame(columns=depot.columns, index=depot.index)
-    route = route.dropna()
-
-    # first route
-
-    # Total Time
-    TT = 0
-    # Vehicle Capacity
-    VC = 0
-
-    for MTi in range(0, len(MT_CUSTOMERS)):
-        # get i-th customer
-        c = MT_CUSTOMERS.iloc[[MTi]]
-        next_VC = VC + c['DEMAND'].values[0]
-
-        # customers param values
-        RT = c['READY TIME'].values[0]
-        DT = c['DUE DATE'].values[0]
-        ST = c['SERVICE TIME'].values[0]
-
-        # check if vehicle capacity with current customer demand is available or DUE DATE isn't reached
-        # if not skip to next customer
-        if next_VC > vehicle_capacity or TT > DT:
-            continue
-
-        # (optional) update total time by RT
-        if TT <= RT:
-            TT = RT
-
-        # increment total time by customer service time
-        TT += ST
-        # increment vehicle capacity
-        VC = next_VC
-
-        # place customer at route
-        route = pd.concat([route, c], ignore_index=False, axis=0)
-
-
-    # remove aligned customers from MT_CUSTOMERS
-    MT_CUSTOMERS.drop(route.index, axis=0, inplace=True)
-
-    print(route)
-
-    # check LT_CUSTOMERS
-
-    # Total Time
-    TT = 0
-    # Vehicle Capacity
-    VC = 0
-
-    # for LTi in range(0, len(LT_CUSTOMERS)):
-    #
-    #     # get i-th customer
-    #     c = LT_CUSTOMERS.iloc[[LTi]]
-    #     next_VC = VC + c['DEMAND'].values[0]
-    #
-    #     # customers param values
-    #     RT = c['READY TIME'].values[0]
-    #     DT = c['DUE DATE'].values[0]
-    #     ST = c['SERVICE TIME'].values[0]
-    #
-    #     for ri in range(0, len(route)):
-    #         r = route.iloc[[ri]]
-    #         next_VC = VC + c['DEMAND'].values[0]
-    #
-    #         # customers param values
-    #         RT = c['READY TIME'].values[0]
-    #         DT = c['DUE DATE'].values[0]
-    #         ST = c['SERVICE TIME'].values[0]
-    #
-    #     if next_VC > vehicle_capacity or TT > DT:
-    #        continue
-    #
-    #     if TT <= RT:
-    #        TT = RT
-    #
-    #     TT += ST
-    #     VC = next_VC
-    #
-    #     # place customer at route
-    #     route = pd.concat([route, c], ignore_index=False, axis=0)
-
-
-
-
-
-
-        # print(TT)
-        # TT = TT if TT <= RT else RT
-        # TT = TT + c['SERVICE TIME'].values[0]
-        # print( TT + c['SERVICE TIME'].values[0])
-        # TT += c['SERVICE TIME'].values[0]
-
-        # RT = c['READY TIME'].values[0]
-        # TT = TT if TT <= RT else RT
-        # TT += c['SERVICE TIME']
-
-    print(route)
-
-    # for row in MT_CUSTOMERS.itertuples():
-        # print(row)
-        # total.append(row.src_bytes + row.dst_bytes)
-
-
-    # for index, c in MT_CUSTOMERS.iterrows():
-    #     next_VC = VC + c['DEMAND']
-    #     if next_VC > vehicle_capacity:
-    #         continue
-    #     VC = next_VC
-        # route.concat(c)
-        # route = pd.concat([route, c], ignore_index=True, axis=1)
-        # route.append(c, ignore_index=False)
-        # route[0,index] = c
-
-
-        # print(MT_CUSTOMERS.iloc(1,))
-
-        # route.iloc[index] = c
-        # print(VC)
-
-        # RT = c['READY TIME']
-        # TT = TT if TT <= RT else RT
-        # TT += c['SERVICE TIME']
-
-    # print(route)
-
-    # print(fdata)
+    # get initial solution
+    initialSolution.flow(MT_CUSTOMERS, LT_CUSTOMERS, EE_CUSTOMERS, VEHICLE_CAPACITY)
 
     # tour = fdata["CUST NO."].values
     # print(tour)
     # distance = totaldistancetour(fdata, tour)
     # print(f'distance - {distance}')
 
-    # min distance
-    #
 
 
 def distance(x1, y1, x2, y2):
