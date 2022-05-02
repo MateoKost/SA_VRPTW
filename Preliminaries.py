@@ -4,7 +4,7 @@ TZERO = 80
 
 VEHICLE_CAPACITY_C1 = 200
 
-# do eksperymentowania
+# experiment based
 MT_CLIENT_C1 = 5
 LT_CLIENT_C1 = 2
 
