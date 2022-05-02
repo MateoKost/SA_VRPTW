@@ -5,10 +5,6 @@ def flow(MT_CUSTOMERS, LT_CUSTOMERS, EE_CUSTOMERS, VEHICLE_CAPACITY):
     # initialize routes
     routes = []
 
-    # print(MT_CUSTOMERS.iloc[:1])
-    # print(MT_CUSTOMERS.iloc[1:])
-    # print(LT_CUSTOMERS)
-
     # assign MT_CUSTOMERS to new routes
     while len(MT_CUSTOMERS) > 0:
         route, MT_CUSTOMERS = assignMT_CUSTOMERS(MT_CUSTOMERS, VEHICLE_CAPACITY)
@@ -75,8 +71,10 @@ def assignMT_CUSTOMERS(MT_CUSTOMERS, VEHICLE_CAPACITY):
 
 def assignLT_CUSTOMERS(route, LT_CUSTOMERS, VEHICLE_CAPACITY):
 
+    # cannot modify a dataframe while it's being iterated
     LT_CUSTOMERS_copy = LT_CUSTOMERS.copy()
 
+    # iterate over LTs
     for LTi in range(0, len(LT_CUSTOMERS)):
 
         # Total Time
@@ -99,8 +97,9 @@ def assignLT_CUSTOMERS(route, LT_CUSTOMERS, VEHICLE_CAPACITY):
             r = route.iloc[[ri]]
             route_capacity += r['DEMAND'].values[0]
 
-
+        # when vehicle has available space for customer demand
         if route_capacity + LTi_D <= VEHICLE_CAPACITY:
+
             # check possibility of placing lt customer at the beginning of route
             if len(route) > 0:
                 r = route.iloc[[0]]
@@ -135,32 +134,12 @@ def assignLT_CUSTOMERS(route, LT_CUSTOMERS, VEHICLE_CAPACITY):
                     LT_CUSTOMERS_copy.drop(c.index, axis=0, inplace=True)
                     break
 
-                # print(r)
-                # r_D = r['DEMAND'].values[0]
-                # r_RT = r['READY TIME'].values[0]
-                # r_DT = r['DUE DATE'].values[0]
-                # r_ST = r['SERVICE TIME'].values[0]
-                # # check possibility of placing lt customer before the route
-                # prev_availableTime = TT
-                #
-                # if prev_availableTime <= LTi_RT:
-                #    prev_availableTime = LTi_RT
-                #
-                # prev_availableTime += LTi_ST
-                #
-                # if prev_availableTime <= r_DT:
-                #     route = pd.concat([c, route], ignore_index=False, axis=0)
-                #     LT_CUSTOMERS.drop(c.index, axis=0, inplace=True)
-                #     # TT = prev_availableTime
-                #     break
-
-            # find available place at route
+            # find available place at route between existing customers
             for ri in range(0, len(route)-1):
 
                 # current customer at route
                 r_a = route.iloc[[ri]]
                 r_a_RT = r_a['READY TIME'].values[0]
-                r_a_DT = r_a['DUE DATE'].values[0]
                 r_a_ST = r_a['SERVICE TIME'].values[0]
 
                 # update the time
@@ -171,69 +150,24 @@ def assignLT_CUSTOMERS(route, LT_CUSTOMERS, VEHICLE_CAPACITY):
 
                 # next customer at route
                 r_b = route.iloc[[ri + 1]]
-                r_b_RT = r_b['READY TIME'].values[0]
                 r_b_DT = r_b['DUE DATE'].values[0]
-                r_b_ST = r_b['SERVICE TIME'].values[0]
 
+                # check whether existing time windows wouldn't be violated
                 between_available_time = prev_availableTime
                 if between_available_time <= LTi_RT:
                     between_available_time = LTi_RT
                 between_available_time += LTi_ST
 
-
-                # print(pd.concat([route.iloc[:ri+1], c, route.iloc[ri+1:]], ignore_index=False, axis=0))
-
                 if between_available_time <= r_b_DT:
                     print(f'between_available_time - {between_available_time}')
                     print(f'r_b_DT - {r_b_DT}')
-                    # print(c.index)
                     route = pd.concat([route.iloc[:ri+1], c, route.iloc[ri+1:]], ignore_index=False, axis=0)
                     LT_CUSTOMERS_copy.drop(c.index, axis=0, inplace=True)
                     break
 
+                # increment time
                 TT = prev_availableTime
 
-                # if between_available_time <= r_b_DT:
-                #     route = pd.concat([route.iloc[:ri], c, route.iloc[ri+1:]], ignore_index=False, axis=0)
-                #     LT_CUSTOMERS.drop(c.index, axis=0, inplace=True)
-                #     break
-
-                # measure the time between r_a and r_b
-                # next_availableTime = prev_availableTime
-                # if next_availableTime <= r_b_RT:
-                #     next_availableTime = r_b_RT
-                # next_availableTime += r_b_ST
-
-                # # check possibility of placing lt customer before the route
-                # if ri == 0:
-                #     prev_availableTime = TT
-                #
-                #     if prev_availableTime <= LTi_RT:
-                #         prev_availableTime = LTi_RT
-                #
-                #     prev_availableTime += LTi_ST
-                #
-                #     if prev_availableTime <= r_DT:
-                #         route = pd.concat([c, route], ignore_index=False, axis=0)
-                #         LT_CUSTOMERS.drop(c.index, axis=0, inplace=True)
-                #         TT = prev_availableTime
-                #         break
-
-                # check possibility of placing lt customer after r customer
-                # next_availableTime = TT
-                #
-                # if next_availableTime <= r_RT:
-                #     next_availableTime = r_RT
-                #
-                # next_availableTime += r_ST
-                #
-                # if LTi_RT <= next_availableTime:
-                #     # route = pd.concat([c, route], ignore_index=False, axis=0)
-                #     # LT_CUSTOMERS.drop(c.index, axis=0, inplace=True)
-                #     TT = prev_availableTime
-                #     break
-                #
-                # TT = next_availableTime
         else:
             break
 
