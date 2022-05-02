@@ -13,7 +13,6 @@ def flow(MT_CUSTOMERS, LT_CUSTOMERS, EE_CUSTOMERS, VEHICLE_CAPACITY):
     # assign LT_CUSTOMERS into existing routes
     for ri in range(0, len(routes)):
         route, LT_CUSTOMERS = assignLT_CUSTOMERS(routes[ri], LT_CUSTOMERS, VEHICLE_CAPACITY)
-        print(len(LT_CUSTOMERS))
         routes[ri] = route
 
     # assign remaining LT_CUSTOMERS into new routes the way MT_CUSTOMERS were assigned
@@ -22,7 +21,20 @@ def flow(MT_CUSTOMERS, LT_CUSTOMERS, EE_CUSTOMERS, VEHICLE_CAPACITY):
             route, LT_CUSTOMERS = assignMT_CUSTOMERS(LT_CUSTOMERS, VEHICLE_CAPACITY)
             routes.append(route)
 
-    print(routes)
+    # assign EE_CUSTOMERS into existing routes
+    for ri in range(0, len(routes)):
+        route, EE_CUSTOMERS = assignLT_CUSTOMERS(routes[ri], EE_CUSTOMERS, VEHICLE_CAPACITY)
+        routes[ri] = route
+
+    # assign remaining EE_CUSTOMERS into new routes the way MT_CUSTOMERS were assigned
+    if len(EE_CUSTOMERS) > 0:
+        while len(EE_CUSTOMERS) > 0:
+            route, EE_CUSTOMERS = assignMT_CUSTOMERS(EE_CUSTOMERS, VEHICLE_CAPACITY)
+            routes.append(route)
+
+    # print(len(routes))
+
+    return routes
 
 
 def assignMT_CUSTOMERS(MT_CUSTOMERS, VEHICLE_CAPACITY):
@@ -159,8 +171,6 @@ def assignLT_CUSTOMERS(route, LT_CUSTOMERS, VEHICLE_CAPACITY):
                 between_available_time += LTi_ST
 
                 if between_available_time <= r_b_DT:
-                    print(f'between_available_time - {between_available_time}')
-                    print(f'r_b_DT - {r_b_DT}')
                     route = pd.concat([route.iloc[:ri+1], c, route.iloc[ri+1:]], ignore_index=False, axis=0)
                     LT_CUSTOMERS_copy.drop(c.index, axis=0, inplace=True)
                     break

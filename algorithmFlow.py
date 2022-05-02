@@ -32,27 +32,29 @@ def run(fdata, VEHICLE_CAPACITY):
     EE_CUSTOMERS.drop(LT_CUSTOMERS.index, axis=0, inplace=True)
 
     # get initial solution
-    initialSolution.flow(MT_CUSTOMERS, LT_CUSTOMERS, EE_CUSTOMERS, VEHICLE_CAPACITY)
+    routes = initialSolution.flow(MT_CUSTOMERS, LT_CUSTOMERS, EE_CUSTOMERS, VEHICLE_CAPACITY)
 
-    # tour = fdata["CUST NO."].values
-    # print(tour)
-    # distance = totaldistancetour(fdata, tour)
-    # print(f'distance - {distance}')
+    # sum distances
+    distances = 0
+    for i in range(0, len(routes)-1):
+        distances += totalRouteDistance(routes[i])
 
+    print(f'total distance - {distances}')
+    print(f'vehicles - {len(routes)}')
 
 
 def distance(x1, y1, x2, y2):
     return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 
-def totaldistancetour(customers, tour):
+def totalRouteDistance(route):
     d = 0
-    for i in range(1, len(tour)):
-        customerPrevious = customers[customers['CUST NO.'] == tour[i - 1]]
+    for i in range(1, len(route)):
+        customerPrevious = route.iloc[[i-1]]
         x1 = customerPrevious['XCOORD.'].values[0]
         y1 = customerPrevious['YCOORD.'].values[0]
 
-        customerAtTourMoment = customers[customers['CUST NO.'] == tour[i]]
+        customerAtTourMoment = route.iloc[[i]]
         x2 = customerAtTourMoment['XCOORD.'].values[0]
         y2 = customerAtTourMoment['YCOORD.'].values[0]
 
