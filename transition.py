@@ -15,36 +15,27 @@ def transition(routes, CUSTOMERS, radius, cnumber):
     clientsToRemove = clientsToRemove.dropna()
 
     # get random not empty route
-    randomRouteIndex = randrange(len(new_routes))
-    randomRoute = new_routes[randomRouteIndex]
-    while len(randomRoute) <= 0:
-        randomRouteIndex = randrange(len(new_routes))
-        randomRoute = new_routes[randomRouteIndex]
+    randomRoute = findRandomNotEmptyRoute(new_routes)
 
     # get random customer and his coords
     randomCustomerIndex = randrange(len(randomRoute))
     randomCustomer = randomRoute.iloc[[randomCustomerIndex]]
     randomCustomer_x = randomCustomer['XCOORD.'].values[0]
     randomCustomer_y = randomCustomer['YCOORD.'].values[0]
+    clientsToRemove = pd.concat([clientsToRemove, randomCustomer], ignore_index=False, axis=0)
     removedCounter = 1
 
-    # remove randomCustomer from route
-    randomRoute.drop(randomCustomer.index, axis=0, inplace=True)
+    # # remove randomCustomer from route
+    # randomRoute.drop(randomCustomer.index, axis=0, inplace=True)
 
-    # consider putting this into separate function
-    # get second random not empty route
-    # randomRouteIndex = randrange(len(new_routes))
-    # secondRandomRoute = new_routes[randomRouteIndex]
-    # while len(secondRandomRoute) <= 0:
-    #     randomRouteIndex = randrange(len(new_routes))
-    #     secondRandomRoute = new_routes[randomRouteIndex]
-
-    # loop for reaching clientsToRemove length equals cnumber
-
+    # loop for reaching cnumber
     while removedCounter < cnumber:
 
         # apply method of increasing radius
         for ri in range(0, len(new_routes)):
+            if removedCounter >= cnumber:
+                break
+
             route = new_routes[ri]
 
             for i in range(0, len(route)):
@@ -60,18 +51,35 @@ def transition(routes, CUSTOMERS, radius, cnumber):
                         clientsToRemove = pd.concat([clientsToRemove, customer_i], ignore_index=False, axis=0)
                         removedCounter += 1
 
-            if removedCounter >= cnumber:
-                break
-
+        # remove clientsToRemove from new_routes
         removeClientsFromRoutes(new_routes, clientsToRemove)
-        # print(clientsToRemove)
 
-        # if removedCounter == 1:
+        # remove empty routes
+        new_routes = removeEmptyRoutes(new_routes)
+
+        # force new client positions in random routes
+        # enforceIntoRandomRoute(clientsToRemove, new_routes)
+
+        # multiply radius
         localRadius *= RADIUS_SCALAR
 
         print(f'removedCounter - {removedCounter}')
 
+    print(f'N routes - {len(new_routes)}')
+
     return new_routes
+
+
+def findRandomRoute(routes):
+    randomRouteIndex = randrange(len(routes))
+    return routes[randomRouteIndex]
+
+
+def findRandomNotEmptyRoute(routes):
+    randomRoute = findRandomRoute(routes)
+    while len(randomRoute) <= 0:
+        randomRoute = findRandomRoute(routes)
+    return randomRoute
 
 
 def containsInRadius(x, y, a, b, r):
@@ -89,49 +97,33 @@ def removeClientsFromRoutes(routes, clientsToRemove):
     for ri in range(0, len(itRoutesCopy)):
         route = itRoutesCopy[ri]
 
-        # localToRemove = []
         localToRemove = pd.DataFrame(columns=clientsToRemove.columns, index=clientsToRemove.index)
         localToRemove = localToRemove.dropna()
 
         for cr in range(0, len(clientsToRemove)):
-            # print(f'cr - {clientsToRemove.iloc[[cr]].index.values[0]}')
-
             cr_row = clientsToRemove.iloc[[cr]]
             cr_index = cr_row.index
             cr_index_v = cr_index.values[0]
-            # print(cr_index in route.index)
-            # if cr_index in route.index:
-            #     localToRemove.append(cr_index)
             if cr_index_v in route.index.values.tolist():
-                # print(routes[ri])
                 localToRemove = pd.concat([localToRemove, cr_row], ignore_index=False, axis=0)
-                # print(cr_index_v)
-                # routes[ri].drop(cr_index, axis=0, inplace=True)
 
-                # routes[ri].drop(cr_index, axis=0, inplace=True)
-
-                # clientsToRemove.drop(cr_index, axis=0, inplace=True)
-                # print(routes[ri])
-                # print('clientsToRemove')
-                # print(clientsToRemove)
-
-                # localToRemove.append(cr_index)
-
-        # print(pd.DataFrame(data=localToRemove))
-        # print(localToRemove)
-        # print(localToRemove.index)
-        # print(routes[ri])
-        print(localToRemove)
         routes[ri].drop(localToRemove.index, axis=0, inplace=True)
-        clientsToRemove.drop(localToRemove.index, axis=0, inplace=True)
-        # print(clientsToRemove)
-
-        # route = pd.DataFrame(columns=MT_CUSTOMERS.columns, index=MT_CUSTOMERS.index)
-        # route = route.dropna()
+        # clientsToRemove.drop(localToRemove.index, axis=0, inplace=True)
 
 
-            # if routecr.index
-        # for cr in route
-        #     if routecr.index
-        # route.drop(clientsToRemove.index, axis=0, inplace=True)
-        # for ci in range(0, len(route)):
+def enforceIntoRandomRoute(clientsToReplace, routes):
+    for cr in range(0, len(clientsToReplace)):
+        cr_row = clientsToReplace.iloc[[cr]]
+        randomRoute = findRandomRoute(routes)
+
+
+def removeEmptyRoutes(routes):
+    new_routes = routes.copy()
+
+    new_routes.sort(key=lambda x: len(x.index), reverse=True)
+
+    while len(new_routes[-1].index) == 0:
+        del new_routes[-1]
+
+    return new_routes
+
