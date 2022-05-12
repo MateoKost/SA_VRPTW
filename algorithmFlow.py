@@ -53,13 +53,17 @@ def run(fdata, VEHICLE_CAPACITY):
 
 def annealing(routes, distances, CUSTOMERS, depot):
     temperature = TZERO
+    # about 10-15% of customers number
     cnumber = PROPORTION_CNUMBER * len(CUSTOMERS)
+    # about 25% of median of distances between customers
     radius = 0.25 * distanceMedian(CUSTOMERS)
     best_solution = routes
     best_distances = distances
-    for epoch in range(1, 11):
-        for iter in range(1, 11):
-            step_solution = transition(best_solution, CUSTOMERS)
+    for epoch in range(1, 2):
+        print(f'epoc - {epoch}')
+        for iter in range(1, 2):
+            print(f'iter - {iter}')
+            step_solution = transition(best_solution, CUSTOMERS, radius, cnumber)
             # sum distances
             step_distances = 0
             for i in range(0, len(step_solution)):
