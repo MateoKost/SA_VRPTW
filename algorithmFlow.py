@@ -6,7 +6,7 @@ import initialSolution
 from transition import transition
 from random import uniform
 from statistics import median
-import copy
+
 
 def run(fdata, VEHICLE_CAPACITY):
     # decrease indexes () by 1
@@ -59,38 +59,32 @@ def annealing(routes, distances, CUSTOMERS, depot):
     radius = 0.25 * distanceMedian(CUSTOMERS)
     best_solution = routes.copy()
     best_distances = distances
-    best_solution_n_customers = sum(len(x) for x in best_solution)
-    for epoch in range(1, 11):
-        print(f'epoc - {epoch}')
-        for iteration in range(1, 11):
-            print(f'iter - {iteration}')
-            # print(f'N CUSTOMERS on best_solution - {sum(len(x) for x in best_solution)}')
-            best_solution_n_customers = sum(len(x) for x in best_solution)
-            print(f'N CUSTOMERS on best_solution - {sum(len(x) for x in best_solution)}')
+    for epoch in range(1, 33):
+        print(f'epoch - {epoch}')
+        for iteration in range(1, 200):
             step_solution = transition(best_solution, CUSTOMERS, radius, cnumber)
-            print(f'N CUSTOMERS on best_solution - {sum(len(x) for x in best_solution)}')
-            print(f'N CUSTOMERS on step_solution - {sum(len(x) for x in step_solution)}')
-            # print(f'N CUSTOMERS on step_solution - {sum(len(x) for x in step_solution)}')
             # sum distances
             step_distances = 0
             for i in range(0, len(step_solution)):
                 step_distances += totalRouteDistance(pd.concat([depot, step_solution[i]], ignore_index=False, axis=0))
-
             delta = step_distances - best_distances
             # change best solution
             if delta < 0:
-                best_solution = step_solution.copy()
+                best_solution = step_solution
                 best_distances = step_distances
-                print('delta change')
             else:
                 b = uniform(0, 1)
                 if b < math.exp(-delta/temperature):
-                    print('b change')
-                    best_solution = step_solution.copy()
+                    best_solution = step_solution
                     best_distances = step_distances
-            print(f'N CUSTOMERS on best_solution - {sum(len(x) for x in best_solution)}')
-            print(f'N CUSTOMERS on step_solution - {sum(len(x) for x in step_solution)}')
         decreaseTemperatureFunction(temperature)
+        print(f'\tN CUSTOMERS on best_solution - {sum(len(x) for x in best_solution)}')
+        print(f'\tbest_distances - {best_distances}')
+        print(f'\tN routes - {len(best_solution)}')
+    print(f'END - {len(best_solution)}')
+    print(f'N CUSTOMERS on best_solution - {sum(len(x) for x in best_solution)}')
+    print(f'best_distances - {best_distances}')
+    print(f'N routes - {len(best_solution)}')
     return best_solution, best_distances
 
 
