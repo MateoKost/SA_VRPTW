@@ -11,6 +11,14 @@ def getFileNames(path):
     return f
 
 
+def getDirNames(path):
+    dirs = []
+    for (dirpath, dirnames, filenames) in walk(path):
+        dirs.extend(dirnames)
+        break
+    return dirs
+
+
 def readBenchmark(name):
     print(f'B - {name}')
     df = pd.read_csv(name, sep=';', index_col=0)

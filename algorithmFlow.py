@@ -11,7 +11,7 @@ from statistics import median
 from benchmarkReader import appendEpochResult, generateRunName, formatEpochResult, writeEpochResult
 
 
-def run(benchmark, fdata, VEHICLE_CAPACITY):
+def run(benchmark, fdata, vehicle_capacity):
     # decrease indexes () by 1
     fdata.index -= 1
 
@@ -38,14 +38,14 @@ def run(benchmark, fdata, VEHICLE_CAPACITY):
     EE_CUSTOMERS.drop(LT_CUSTOMERS.index, axis=0, inplace=True)
 
     # get initial solution
-    routes = initialSolution.flow(MT_CUSTOMERS, LT_CUSTOMERS, EE_CUSTOMERS, VEHICLE_CAPACITY)
+    routes = initialSolution.flow(MT_CUSTOMERS, LT_CUSTOMERS, EE_CUSTOMERS, vehicle_capacity)
 
     # sum distances
     distances = 0
     for i in range(0, len(routes)):
         distances += totalRouteDistance(pd.concat([depot, routes[i]], ignore_index=False, axis=0))
 
-    runName = generateRunName(benchmark, TZERO, VEHICLE_CAPACITY_C1)
+    runName = generateRunName(benchmark, TZERO, vehicle_capacity)
     # append col names
     appendEpochResult(runName, 'solutions.csv', [[]], header=True)
     formattedResult = [[runName, 0, TZERO, distances, len(routes)]]
@@ -61,12 +61,12 @@ def run(benchmark, fdata, VEHICLE_CAPACITY):
     # export best ever solution
     writeEpochResult(runName, 0, TZERO, routes, 'be_epoch')
 
-    best_solution, best_distances = annealing(runName, routes, distances, fdata, depot)
+    best_solution, best_distances = annealing(runName, routes, distances, fdata, depot, vehicle_capacity)
 
     return best_distances, len(best_solution)
 
 
-def annealing(runName, routes, distances, CUSTOMERS, depot):
+def annealing(runName, routes, distances, CUSTOMERS, depot, VEHICLE_CAPACITY):
     temperature = TZERO
     # about 10-15% of customers number
     cnumber = PROPORTION_CNUMBER * len(CUSTOMERS)
@@ -80,7 +80,7 @@ def annealing(runName, routes, distances, CUSTOMERS, depot):
     for epoch in range(1, 33):
         print(f'epoch - {epoch}')
         for iteration in range(1, 200):
-            step_solution = transition(best_solution, CUSTOMERS, radius, cnumber)
+            step_solution = transition(best_solution, CUSTOMERS, radius, cnumber, VEHICLE_CAPACITY)
             # sum distances
             step_distances = 0
             for i in range(0, len(step_solution)):
