@@ -1,3 +1,5 @@
+import copy
+
 from Preliminaries import *
 import utils
 import math
@@ -6,9 +8,10 @@ import initialSolution
 from transition import transition
 from random import uniform
 from statistics import median
+from benchmarkReader import appendEpochResult, generateRunName, formatEpochResult, writeEpochResult
 
 
-def run(fdata, VEHICLE_CAPACITY):
+def run(benchmark, fdata, VEHICLE_CAPACITY):
     # decrease indexes () by 1
     fdata.index -= 1
 
@@ -42,25 +45,38 @@ def run(fdata, VEHICLE_CAPACITY):
     for i in range(0, len(routes)):
         distances += totalRouteDistance(pd.concat([depot, routes[i]], ignore_index=False, axis=0))
 
-    print('initial solution')
-    print(f'total distance - {distances}')
-    print(f'vehicles - {len(routes)}')
+    runName = generateRunName(benchmark, TZERO, VEHICLE_CAPACITY_C1)
+    # append col names
+    appendEpochResult(runName, 'solutions.csv', [[]], header=True)
+    formattedResult = [[runName, 0, TZERO, distances, len(routes)]]
+    # append initial solution
+    appendEpochResult(runName, 'solutions.csv', formattedResult, header=False)
+    # export initial solution
+    writeEpochResult(runName, 0, TZERO, routes, 'epoch')
 
-    best_solution, best_distances = annealing(routes, distances, fdata, depot)
+    # append best ever solutions
+    appendEpochResult(runName, 'best-ever-solutions.csv', [[]], header=True)
+    formattedResult = [[runName, 0, TZERO, distances, len(routes)]]
+    appendEpochResult(runName, 'best-ever-solutions.csv', formattedResult, header=False)
+    # export best ever solution
+    writeEpochResult(runName, 0, TZERO, routes, 'be_epoch')
+
+    best_solution, best_distances = annealing(runName, routes, distances, fdata, depot)
 
     return best_distances, len(best_solution)
 
 
-def annealing(routes, distances, CUSTOMERS, depot):
+def annealing(runName, routes, distances, CUSTOMERS, depot):
     temperature = TZERO
     # about 10-15% of customers number
     cnumber = PROPORTION_CNUMBER * len(CUSTOMERS)
     # about 25% of median of distances between customers
     radius = 0.25 * distanceMedian(CUSTOMERS)
-    best_solution = routes.copy()
+    best_solution = copy.deepcopy(routes)
     best_distances = distances
-    best_ever_solution = routes.copy()
+    best_ever_solution = copy.deepcopy(routes)
     best_ever_distances = distances
+
     for epoch in range(1, 33):
         print(f'epoch - {epoch}')
         for iteration in range(1, 200):
@@ -82,17 +98,22 @@ def annealing(routes, distances, CUSTOMERS, depot):
                 if b < math.exp(-delta/temperature):
                     best_solution = step_solution
                     best_distances = step_distances
+
+        # append best solution
+        formattedResult = [[runName, epoch, temperature, best_distances, len(best_solution)]]
+        appendEpochResult(runName, 'solutions.csv', formattedResult, header=False)
+        # export initial solution
+        writeEpochResult(runName, epoch, temperature, best_solution, 'epoch')
+
+        # append best ever solutions
+        formattedResult = [[runName, epoch, temperature, best_ever_distances, len(best_ever_solution)]]
+        appendEpochResult(runName, 'best-ever-solutions.csv', formattedResult, header=False)
+        # export best ever solution
+        writeEpochResult(runName, epoch, temperature, best_ever_solution, 'be_epoch')
+
+        # decrease annealing temperature
         decreaseTemperatureFunction(temperature)
-        print(f'\tN CUSTOMERS on best_solution - {sum(len(x) for x in best_solution)}')
-        print(f'\tbest_distances - {best_distances}')
-        print(f'\tN routes - {len(best_solution)}')
-        print(f'\tbest_ever_solution - {best_ever_solution}')
-        print(f'\tbest_ever_distances - {best_ever_distances}')
-        print(f'\tN routes - {len(best_ever_solution)}')
-    print(f'END - {len(best_solution)}')
-    print(f'N CUSTOMERS on best_solution - {sum(len(x) for x in best_solution)}')
-    print(f'best_distances - {best_distances}')
-    print(f'N routes - {len(best_solution)}')
+
     return best_solution, best_distances
 
 
