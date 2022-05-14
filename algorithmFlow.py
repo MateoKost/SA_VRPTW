@@ -1,17 +1,16 @@
 import copy
 
 from Preliminaries import *
-import utils
 import math
 import pandas as pd
 import initialSolution
 from transition import transition
 from random import uniform
 from statistics import median
-from benchmarkReader import appendEpochResult, generateRunName, formatEpochResult, writeEpochResult
+from benchmarkReader import appendEpochResult, generateBenchmarkRunName, writeEpochResult
 
 
-def run(benchmark, fdata, vehicle_capacity):
+def run(exportDirectory, benchmark, fdata, vehicle_capacity):
     # decrease indexes () by 1
     fdata.index -= 1
 
@@ -45,28 +44,28 @@ def run(benchmark, fdata, vehicle_capacity):
     for i in range(0, len(routes)):
         distances += totalRouteDistance(pd.concat([depot, routes[i]], ignore_index=False, axis=0))
 
-    runName = generateRunName(benchmark, TZERO, vehicle_capacity)
+    runName = generateBenchmarkRunName(benchmark, TZERO, vehicle_capacity)
     # append col names
-    appendEpochResult(runName, 'solutions.csv', [[]], header=True)
+    appendEpochResult(exportDirectory, runName, 'solutions.csv', [[]], header=True)
     formattedResult = [[runName, 0, TZERO, distances, len(routes)]]
     # append initial solution
-    appendEpochResult(runName, 'solutions.csv', formattedResult, header=False)
+    appendEpochResult(exportDirectory, runName, 'solutions.csv', formattedResult, header=False)
     # export initial solution
-    writeEpochResult(runName, 0, TZERO, routes, 'epoch')
+    writeEpochResult(exportDirectory, runName, 0, TZERO, routes, 'epoch')
 
     # append best ever solutions
-    appendEpochResult(runName, 'best-ever-solutions.csv', [[]], header=True)
+    appendEpochResult(exportDirectory, runName, 'best-ever-solutions.csv', [[]], header=True)
     formattedResult = [[runName, 0, TZERO, distances, len(routes)]]
-    appendEpochResult(runName, 'best-ever-solutions.csv', formattedResult, header=False)
+    appendEpochResult(exportDirectory, runName, 'best-ever-solutions.csv', formattedResult, header=False)
     # export best ever solution
-    writeEpochResult(runName, 0, TZERO, routes, 'be_epoch')
+    writeEpochResult(exportDirectory, runName, 0, TZERO, routes, 'be_epoch')
 
-    best_solution, best_distances = annealing(runName, routes, distances, fdata, depot, vehicle_capacity)
+    best_solution, best_distances = annealing(exportDirectory, runName, routes, distances, fdata, depot, vehicle_capacity)
 
     return best_distances, len(best_solution)
 
 
-def annealing(runName, routes, distances, CUSTOMERS, depot, VEHICLE_CAPACITY):
+def annealing(exportDirectory, runName, routes, distances, CUSTOMERS, depot, VEHICLE_CAPACITY):
     temperature = TZERO
     # about 10-15% of customers number
     cnumber = PROPORTION_CNUMBER * len(CUSTOMERS)
@@ -77,9 +76,9 @@ def annealing(runName, routes, distances, CUSTOMERS, depot, VEHICLE_CAPACITY):
     best_ever_solution = copy.deepcopy(routes)
     best_ever_distances = distances
 
-    for epoch in range(1, 33):
+    for epoch in range(1, EPOCH+1):
         print(f'epoch - {epoch}')
-        for iteration in range(1, 200):
+        for iteration in range(1, ITER+1):
             step_solution = transition(best_solution, CUSTOMERS, radius, cnumber, VEHICLE_CAPACITY)
             # sum distances
             step_distances = 0
@@ -101,15 +100,15 @@ def annealing(runName, routes, distances, CUSTOMERS, depot, VEHICLE_CAPACITY):
 
         # append best solution
         formattedResult = [[runName, epoch, temperature, best_distances, len(best_solution)]]
-        appendEpochResult(runName, 'solutions.csv', formattedResult, header=False)
+        appendEpochResult(exportDirectory, runName, 'solutions.csv', formattedResult, header=False)
         # export initial solution
-        writeEpochResult(runName, epoch, temperature, best_solution, 'epoch')
+        writeEpochResult(exportDirectory, runName, epoch, temperature, best_solution, 'epoch')
 
         # append best ever solutions
         formattedResult = [[runName, epoch, temperature, best_ever_distances, len(best_ever_solution)]]
-        appendEpochResult(runName, 'best-ever-solutions.csv', formattedResult, header=False)
+        appendEpochResult(exportDirectory, runName, 'best-ever-solutions.csv', formattedResult, header=False)
         # export best ever solution
-        writeEpochResult(runName, epoch, temperature, best_ever_solution, 'be_epoch')
+        writeEpochResult(exportDirectory, runName, epoch, temperature, best_ever_solution, 'be_epoch')
 
         # decrease annealing temperature
         decreaseTemperatureFunction(temperature)
