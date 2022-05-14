@@ -1,3 +1,5 @@
+import copy
+
 from Preliminaries import *
 import utils
 import math
@@ -6,9 +8,10 @@ import initialSolution
 from transition import transition
 from random import uniform
 from statistics import median
+from benchmarkReader import appendEpochResult, generateRunName, formatEpochResult
 
 
-def run(fdata, VEHICLE_CAPACITY):
+def run(benchmark, fdata, VEHICLE_CAPACITY):
     # decrease indexes () by 1
     fdata.index -= 1
 
@@ -42,25 +45,31 @@ def run(fdata, VEHICLE_CAPACITY):
     for i in range(0, len(routes)):
         distances += totalRouteDistance(pd.concat([depot, routes[i]], ignore_index=False, axis=0))
 
+    runName = generateRunName(benchmark, TZERO, VEHICLE_CAPACITY_C1)
+    appendEpochResult(runName, 'solutions.csv', [[]], header=True)
+    formattedResult = [[runName, 0, TZERO, distances, len(routes)]]
+    appendEpochResult(runName, 'solutions.csv', formattedResult, header=False)
+
     print('initial solution')
     print(f'total distance - {distances}')
     print(f'vehicles - {len(routes)}')
 
-    best_solution, best_distances = annealing(routes, distances, fdata, depot)
+    best_solution, best_distances = annealing(runName, routes, distances, fdata, depot)
 
     return best_distances, len(best_solution)
 
 
-def annealing(routes, distances, CUSTOMERS, depot):
+def annealing(runName, routes, distances, CUSTOMERS, depot):
     temperature = TZERO
     # about 10-15% of customers number
     cnumber = PROPORTION_CNUMBER * len(CUSTOMERS)
     # about 25% of median of distances between customers
     radius = 0.25 * distanceMedian(CUSTOMERS)
-    best_solution = routes.copy()
+    best_solution = copy.deepcopy(routes)
     best_distances = distances
-    best_ever_solution = routes.copy()
+    best_ever_solution = copy.deepcopy(routes)
     best_ever_distances = distances
+
     for epoch in range(1, 33):
         print(f'epoch - {epoch}')
         for iteration in range(1, 200):
@@ -83,6 +92,7 @@ def annealing(routes, distances, CUSTOMERS, depot):
                     best_solution = step_solution
                     best_distances = step_distances
         decreaseTemperatureFunction(temperature)
+        appendEpochResult()
         print(f'\tN CUSTOMERS on best_solution - {sum(len(x) for x in best_solution)}')
         print(f'\tbest_distances - {best_distances}')
         print(f'\tN routes - {len(best_solution)}')

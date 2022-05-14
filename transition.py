@@ -9,7 +9,7 @@ import copy
 def transition(routes, CUSTOMERS, radius, cnumber):
     # cannot operate directly on previous solution & radius value
     localRadius = 0 + radius
-
+    # deep copy is required
     new_routes = copy.deepcopy(routes)
 
     # initialize clients to remove df
