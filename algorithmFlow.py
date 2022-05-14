@@ -59,6 +59,8 @@ def annealing(routes, distances, CUSTOMERS, depot):
     radius = 0.25 * distanceMedian(CUSTOMERS)
     best_solution = routes.copy()
     best_distances = distances
+    best_ever_solution = routes.copy()
+    best_ever_distances = distances
     for epoch in range(1, 33):
         print(f'epoch - {epoch}')
         for iteration in range(1, 200):
@@ -72,6 +74,9 @@ def annealing(routes, distances, CUSTOMERS, depot):
             if delta < 0:
                 best_solution = step_solution
                 best_distances = step_distances
+            if step_distances <= best_ever_distances:
+                best_ever_solution = step_solution
+                best_ever_distances = step_distances
             else:
                 b = uniform(0, 1)
                 if b < math.exp(-delta/temperature):
@@ -81,6 +86,9 @@ def annealing(routes, distances, CUSTOMERS, depot):
         print(f'\tN CUSTOMERS on best_solution - {sum(len(x) for x in best_solution)}')
         print(f'\tbest_distances - {best_distances}')
         print(f'\tN routes - {len(best_solution)}')
+        print(f'\tbest_ever_solution - {best_ever_solution}')
+        print(f'\tbest_ever_distances - {best_ever_distances}')
+        print(f'\tN routes - {len(best_ever_solution)}')
     print(f'END - {len(best_solution)}')
     print(f'N CUSTOMERS on best_solution - {sum(len(x) for x in best_solution)}')
     print(f'best_distances - {best_distances}')

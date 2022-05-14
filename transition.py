@@ -5,13 +5,12 @@ from initialSolution import assignLT_CUSTOMERS, assignMT_CUSTOMERS
 import pandas as pd
 import copy
 
+
 def transition(routes, CUSTOMERS, radius, cnumber):
     # cannot operate directly on previous solution & radius value
     localRadius = 0 + radius
 
     new_routes = copy.deepcopy(routes)
-    # new_routes = routes.deepcopy()
-
 
     # initialize clients to remove df
     clientsToRemove = pd.DataFrame(columns=CUSTOMERS.columns, index=CUSTOMERS.index)
@@ -105,7 +104,7 @@ def searchReplacement(route, customer):
 
 
 def removeClientsFromRoutes(routes, clientsToRemove):
-    itRoutesCopy = routes.copy()
+    itRoutesCopy = copy.deepcopy(routes)
 
     for ri in range(0, len(itRoutesCopy)):
         route = itRoutesCopy[ri]
@@ -143,7 +142,7 @@ def enforceIntoRandomRoute(clientsToReplace, routes):
 
 
 def removeEmptyRoutes(routes):
-    new_routes = routes.copy()
+    new_routes = copy.deepcopy(routes)
 
     new_routes.sort(key=lambda x: len(x.index), reverse=True)
 
