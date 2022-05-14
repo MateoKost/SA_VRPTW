@@ -8,7 +8,7 @@ import initialSolution
 from transition import transition
 from random import uniform
 from statistics import median
-from benchmarkReader import appendEpochResult, generateRunName, formatEpochResult
+from benchmarkReader import appendEpochResult, generateRunName, formatEpochResult, writeEpochResult
 
 
 def run(benchmark, fdata, VEHICLE_CAPACITY):
@@ -46,13 +46,20 @@ def run(benchmark, fdata, VEHICLE_CAPACITY):
         distances += totalRouteDistance(pd.concat([depot, routes[i]], ignore_index=False, axis=0))
 
     runName = generateRunName(benchmark, TZERO, VEHICLE_CAPACITY_C1)
+    # append col names
     appendEpochResult(runName, 'solutions.csv', [[]], header=True)
     formattedResult = [[runName, 0, TZERO, distances, len(routes)]]
+    # append initial solution
     appendEpochResult(runName, 'solutions.csv', formattedResult, header=False)
+    # export initial solution
+    writeEpochResult(runName, 0, TZERO, routes, 'epoch')
 
-    print('initial solution')
-    print(f'total distance - {distances}')
-    print(f'vehicles - {len(routes)}')
+    # append best ever solutions
+    appendEpochResult(runName, 'best-ever-solutions.csv', [[]], header=True)
+    formattedResult = [[runName, 0, TZERO, distances, len(routes)]]
+    appendEpochResult(runName, 'best-ever-solutions.csv', formattedResult, header=False)
+    # export best ever solution
+    writeEpochResult(runName, 0, TZERO, routes, 'be_epoch')
 
     best_solution, best_distances = annealing(runName, routes, distances, fdata, depot)
 
@@ -91,18 +98,22 @@ def annealing(runName, routes, distances, CUSTOMERS, depot):
                 if b < math.exp(-delta/temperature):
                     best_solution = step_solution
                     best_distances = step_distances
+
+        # append best solution
+        formattedResult = [[runName, epoch, temperature, best_distances, len(best_solution)]]
+        appendEpochResult(runName, 'solutions.csv', formattedResult, header=False)
+        # export initial solution
+        writeEpochResult(runName, epoch, temperature, best_solution, 'epoch')
+
+        # append best ever solutions
+        formattedResult = [[runName, epoch, temperature, best_ever_distances, len(best_ever_solution)]]
+        appendEpochResult(runName, 'best-ever-solutions.csv', formattedResult, header=False)
+        # export best ever solution
+        writeEpochResult(runName, epoch, temperature, best_ever_solution, 'be_epoch')
+
+        # decrease annealing temperature
         decreaseTemperatureFunction(temperature)
-        appendEpochResult()
-        print(f'\tN CUSTOMERS on best_solution - {sum(len(x) for x in best_solution)}')
-        print(f'\tbest_distances - {best_distances}')
-        print(f'\tN routes - {len(best_solution)}')
-        print(f'\tbest_ever_solution - {best_ever_solution}')
-        print(f'\tbest_ever_distances - {best_ever_distances}')
-        print(f'\tN routes - {len(best_ever_solution)}')
-    print(f'END - {len(best_solution)}')
-    print(f'N CUSTOMERS on best_solution - {sum(len(x) for x in best_solution)}')
-    print(f'best_distances - {best_distances}')
-    print(f'N routes - {len(best_solution)}')
+
     return best_solution, best_distances
 
 

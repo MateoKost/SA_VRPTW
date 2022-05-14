@@ -34,7 +34,7 @@ def formatEpochResult():
 
 def appendEpochResult(runName, fileName, result, header):
     columns = ['benchmark', 'epoch', 'temperature', 'totalDistance', 'nVehicles']
-    # print(len(result[0]))
+
     if len(result[0]) < len(columns):
         resultDf = pd.DataFrame(columns=columns)
     else:
@@ -43,10 +43,14 @@ def appendEpochResult(runName, fileName, result, header):
     resultDf.to_csv(f'results/{runName}/{fileName}', mode='a', header=header)
 
 
-def writeEpochResult(runName, epoch, result):
-    resultDf = pd.DataFrame(columns=['benchmark', 'duration', 'totalDistance', 'nVehicles'], data=result)
+def writeEpochResult(runName, epoch, temperature, routes, mode):
+    results = []
+    for ri in range(0, len(routes)):
+        results.append([routes[ri].index.tolist()])
 
-    makedirs(f'{runName}', exist_ok=True)
-    makedirs(f'{runName}/epoch', exist_ok=True)
+    resultDf = pd.DataFrame(columns=['customers'], data=results)
 
-    filename = f'{runName}/epoch/ep{epoch}.csv'
+    dirPath = f'results/{runName}/{mode}'
+    makedirs(dirPath, exist_ok=True)
+    filename = f'{dirPath}/ep{epoch}_T{temperature}.csv'
+    resultDf.to_csv(filename)
