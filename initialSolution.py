@@ -32,8 +32,6 @@ def flow(MT_CUSTOMERS, LT_CUSTOMERS, EE_CUSTOMERS, VEHICLE_CAPACITY):
             route, EE_CUSTOMERS = assignMT_CUSTOMERS(EE_CUSTOMERS, VEHICLE_CAPACITY)
             routes.append(route)
 
-    # print(len(routes))
-
     return routes
 
 
