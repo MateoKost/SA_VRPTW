@@ -57,29 +57,42 @@ def annealing(routes, distances, CUSTOMERS, depot):
     cnumber = PROPORTION_CNUMBER * len(CUSTOMERS)
     # about 25% of median of distances between customers
     radius = 0.25 * distanceMedian(CUSTOMERS)
-    best_solution = routes
+    best_solution = routes.copy()
     best_distances = distances
-    for epoch in range(1, 2):
-        print(f'epoc - {epoch}')
-        for iter in range(1, 2):
-            print(f'iter - {iter}')
+    best_ever_solution = routes.copy()
+    best_ever_distances = distances
+    for epoch in range(1, 33):
+        print(f'epoch - {epoch}')
+        for iteration in range(1, 200):
             step_solution = transition(best_solution, CUSTOMERS, radius, cnumber)
             # sum distances
             step_distances = 0
             for i in range(0, len(step_solution)):
                 step_distances += totalRouteDistance(pd.concat([depot, step_solution[i]], ignore_index=False, axis=0))
-
             delta = step_distances - best_distances
             # change best solution
             if delta < 0:
                 best_solution = step_solution
                 best_distances = step_distances
+            if step_distances <= best_ever_distances:
+                best_ever_solution = step_solution
+                best_ever_distances = step_distances
             else:
                 b = uniform(0, 1)
                 if b < math.exp(-delta/temperature):
                     best_solution = step_solution
                     best_distances = step_distances
         decreaseTemperatureFunction(temperature)
+        print(f'\tN CUSTOMERS on best_solution - {sum(len(x) for x in best_solution)}')
+        print(f'\tbest_distances - {best_distances}')
+        print(f'\tN routes - {len(best_solution)}')
+        print(f'\tbest_ever_solution - {best_ever_solution}')
+        print(f'\tbest_ever_distances - {best_ever_distances}')
+        print(f'\tN routes - {len(best_ever_solution)}')
+    print(f'END - {len(best_solution)}')
+    print(f'N CUSTOMERS on best_solution - {sum(len(x) for x in best_solution)}')
+    print(f'best_distances - {best_distances}')
+    print(f'N routes - {len(best_solution)}')
     return best_solution, best_distances
 
 

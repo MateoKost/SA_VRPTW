@@ -1,14 +1,16 @@
 from random import randrange
 from Preliminaries import *
 from random import uniform
-from initialSolution import assignLT_CUSTOMERS
+from initialSolution import assignLT_CUSTOMERS, assignMT_CUSTOMERS
 import pandas as pd
+import copy
 
 
 def transition(routes, CUSTOMERS, radius, cnumber):
     # cannot operate directly on previous solution & radius value
     localRadius = 0 + radius
-    new_routes = routes.copy()
+
+    new_routes = copy.deepcopy(routes)
 
     # initialize clients to remove df
     clientsToRemove = pd.DataFrame(columns=CUSTOMERS.columns, index=CUSTOMERS.index)
@@ -57,17 +59,26 @@ def transition(routes, CUSTOMERS, radius, cnumber):
         # force new client positions in random routes
         clientsForcedToLeave = enforceIntoRandomRoute(clientsToRemove, new_routes)
 
+        # drop clientsToRemove
+        clientsToRemove.drop(clientsToRemove.index, axis=0, inplace=True)
+
+        # increment counter
         removedCounter += len(clientsForcedToLeave)
+
+        # assign clientsForcedToLeave into existing routes
+        n = len(new_routes)
+        for ri in range(0, n):
+            route, clientsForcedToLeave = assignLT_CUSTOMERS(new_routes[ri], clientsForcedToLeave, VEHICLE_CAPACITY_C1)
+            new_routes[ri] = route
+
+        # assign remaining clientsForcedToLeave into new routes the way MT_CUSTOMERS were assigned
+        if len(clientsForcedToLeave) > 0:
+            while len(clientsForcedToLeave) > 0:
+                route, clientsForcedToLeave = assignMT_CUSTOMERS(clientsForcedToLeave, VEHICLE_CAPACITY_C1)
+                new_routes.append(route)
 
         # multiply radius
         localRadius *= RADIUS_SCALAR
-
-        print(f'removedCounter - {removedCounter}')
-
-    print(f'N routes - {len(new_routes)}')
-
-    # check whether all clients are in schedule
-    print(sum(len(x) for x in new_routes))
 
     return new_routes
 
@@ -93,7 +104,7 @@ def searchReplacement(route, customer):
 
 
 def removeClientsFromRoutes(routes, clientsToRemove):
-    itRoutesCopy = routes.copy()
+    itRoutesCopy = copy.deepcopy(routes)
 
     for ri in range(0, len(itRoutesCopy)):
         route = itRoutesCopy[ri]
@@ -119,8 +130,11 @@ def enforceIntoRandomRoute(clientsToReplace, routes):
     # iterate over clientsToReplace
     for cr in range(0, len(clientsToReplace)):
         cr_row = clientsToReplace.iloc[[cr]]
+
         randomRoute, randomRouteIndex = findRandomRoute(routes)
-        newRoute, clientsToLeave = findNewPlace(cr_row, randomRoute)
+
+        newRoute,clientsToLeave = findNewPlace(cr_row, randomRoute)
+
         routes[randomRouteIndex] = newRoute
         forcedToLeaveContainer = pd.concat([forcedToLeaveContainer, clientsToLeave], ignore_index=False, axis=0)
 
@@ -128,7 +142,7 @@ def enforceIntoRandomRoute(clientsToReplace, routes):
 
 
 def removeEmptyRoutes(routes):
-    new_routes = routes.copy()
+    new_routes = copy.deepcopy(routes)
 
     new_routes.sort(key=lambda x: len(x.index), reverse=True)
 
@@ -146,5 +160,13 @@ def findNewPlace(customer, route):
 
     # place customers from the route into the new route
     newRoute, clientsToLeave = assignLT_CUSTOMERS(newRoute, route, VEHICLE_CAPACITY_C1)
+    previousCTLength = len(clientsToLeave)
+
+    while len(clientsToLeave) > 0:
+        newRoute, clientsToLeave = assignLT_CUSTOMERS(newRoute, clientsToLeave, VEHICLE_CAPACITY_C1)
+        if previousCTLength == len(clientsToLeave):
+            break
+        previousCTLength = len(clientsToLeave)
+
     # the customers which haven't been placed are new clients to replace
     return newRoute, clientsToLeave
