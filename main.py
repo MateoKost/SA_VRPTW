@@ -5,7 +5,7 @@ from Preliminaries import *
 
 
 if __name__ == '__main__':
-    externalInitialSolutionEnabled = False
+    externalInitialSolutionEnabled = True
     benchmarkDirectoryPath = 'benchmarks/'
     initialsDirectoryPath = 'initialSolutions/'
     capacityPath = 'benchmarks/vehicle_capacities.csv'
