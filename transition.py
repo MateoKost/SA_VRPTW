@@ -1,7 +1,7 @@
 from random import randrange
 from Preliminaries import *
 from random import uniform
-from initialSolution import assignLT_CUSTOMERS, assignMT_CUSTOMERS
+from initialSolution import assignLT_CUSTOMERS
 import pandas as pd
 import copy
 
@@ -51,31 +51,28 @@ def transition(routes, CUSTOMERS, radius, cnumber, vehicle_capacity):
                         removedCounter += 1
 
         # remove clientsToRemove from new_routes
-        removeClientsFromRoutes(new_routes, clientsToRemove)
+        while len(clientsToRemove) > 0:
+            removeClientsFromRoutes(new_routes, clientsToRemove)
 
-        # remove empty routes
-        new_routes = removeEmptyRoutes(new_routes)
+            # remove empty routes
+            new_routes = removeEmptyRoutes(new_routes)
 
-        # force new client positions in random routes
-        clientsForcedToLeave = enforceIntoRandomRoute(clientsToRemove, new_routes, vehicle_capacity)
+            # force new client positions in random routes
+            clientsForcedToLeave = enforceIntoRandomRoute(clientsToRemove, new_routes, vehicle_capacity)
 
-        # drop clientsToRemove
-        clientsToRemove.drop(clientsToRemove.index, axis=0, inplace=True)
+            # drop clientsToRemove
+            clientsToRemove.drop(clientsToRemove.index, axis=0, inplace=True)
 
-        # increment counter
-        removedCounter += len(clientsForcedToLeave)
+            # # increment counter
+            removedCounter += len(clientsForcedToLeave)
 
-        # assign clientsForcedToLeave into existing routes
-        n = len(new_routes)
-        for ri in range(0, n):
-            route, clientsForcedToLeave = assignLT_CUSTOMERS(new_routes[ri], clientsForcedToLeave, vehicle_capacity)
-            new_routes[ri] = route
+            # assign clientsForcedToLeave into existing routes
+            n = len(new_routes)
+            for ri in range(0, n):
+                route, clientsForcedToLeave = assignLT_CUSTOMERS(new_routes[ri], clientsForcedToLeave, vehicle_capacity)
+                new_routes[ri] = route
 
-        # assign remaining clientsForcedToLeave into new routes the way MT_CUSTOMERS were assigned
-        if len(clientsForcedToLeave) > 0:
-            while len(clientsForcedToLeave) > 0:
-                route, clientsForcedToLeave = assignMT_CUSTOMERS(clientsForcedToLeave, vehicle_capacity)
-                new_routes.append(route)
+            clientsToRemove = clientsForcedToLeave
 
         # multiply radius
         localRadius *= RADIUS_SCALAR

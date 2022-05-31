@@ -5,7 +5,9 @@ from Preliminaries import *
 
 
 if __name__ == '__main__':
+    externalInitialSolutionEnabled = False
     benchmarkDirectoryPath = 'benchmarks/'
+    initialsDirectoryPath = 'initialSolutions/'
     capacityPath = 'benchmarks/vehicle_capacities.csv'
     dirs = benchmarkReader.getDirNames('benchmarks/')
     vehicleCapacities = benchmarkReader.readBenchmark(capacityPath)
@@ -21,7 +23,9 @@ if __name__ == '__main__':
             fdata = benchmarkReader.readBenchmark(f'{benchmarkDirectoryPath}{singleDir}/{f}')
             seriesVehicleCapacity = vehicleCapacities.loc[singleDir].CAPACITY
             totalDistance, nVehicles = algorithmFlow.run(f'{exportDirectory}{singleDir}/',
-                                                         f, fdata, seriesVehicleCapacity)
+                                                         f, fdata, seriesVehicleCapacity,
+                                                         externalInitialSolutionEnabled,
+                                                         f'{initialsDirectoryPath}/{singleDir}/')
             duration = time.time() - startTime
             results.append([f, duration, totalDistance, nVehicles])
             print(f'duration - {duration}')

@@ -35,8 +35,7 @@ def appendBenchmarkResults(results, destination, header):
         resultDf = pd.DataFrame(columns=columns, data=results)
 
     makedirs(destination, exist_ok=True)
-    filename = "{}.csv".format(datetime.now().strftime("%d%m%Y%H%M%S"))
-    filename = f'{destination}{filename}'
+    filename = f'{destination}result.csv'
     resultDf.to_csv(filename, mode='a', header=header)
 
 
@@ -70,3 +69,7 @@ def writeEpochResult(exportDirectory, runName, epoch, temperature, routes, mode)
     makedirs(dirPath, exist_ok=True)
     filename = f'{dirPath}/ep{epoch}_T{temperature}.csv'
     resultDf.to_csv(filename)
+
+
+def readInitialSolution(source):
+    return pd.read_csv(source, sep=';', index_col=0)

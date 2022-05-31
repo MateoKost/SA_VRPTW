@@ -181,3 +181,4 @@ def assignLT_CUSTOMERS(route, LT_CUSTOMERS, VEHICLE_CAPACITY):
 
     return route, LT_CUSTOMERS_copy
 
+
