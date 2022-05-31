@@ -1,7 +1,4 @@
 import pandas as pd
-import benchmarkReader
-import re
-# from algorithmFlow import
 
 
 def flow(MT_CUSTOMERS, LT_CUSTOMERS, EE_CUSTOMERS, VEHICLE_CAPACITY):

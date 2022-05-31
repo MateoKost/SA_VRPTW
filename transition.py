@@ -1,9 +1,7 @@
 from random import randrange
 from Preliminaries import *
 from random import uniform
-from initialSolution import assignLT_CUSTOMERS, assignMT_CUSTOMERS
-# from statistics import mean
-# from algorithmFlow import upgradeRoutes
+from initialSolution import assignLT_CUSTOMERS
 import pandas as pd
 import copy
 
@@ -75,23 +73,6 @@ def transition(routes, CUSTOMERS, radius, cnumber, vehicle_capacity):
                 new_routes[ri] = route
 
             clientsToRemove = clientsForcedToLeave
-
-            # print(clientsToRemove)
-
-        # # assign remaining clientsForcedToLeave into new routes the way MT_CUSTOMERS were assigned
-        # if len(clientsForcedToLeave) > 0:
-        #     while len(clientsForcedToLeave) > 0:
-        #         route, clientsForcedToLeave = assignMT_CUSTOMERS(clientsForcedToLeave, vehicle_capacity)
-        #         new_routes.append(route)
-
-
-
-
-
-
-
-
-
 
         # multiply radius
         localRadius *= RADIUS_SCALAR
@@ -186,52 +167,3 @@ def findNewPlace(customer, route, vehicle_capacity):
 
     # the customers which haven't been placed are new clients to replace
     return newRoute, clientsToLeave
-
-#
-# def upgradeRoutes(routes, upgradeAttempts, vehicle_capacity):
-#
-#     new_routes = copy.deepcopy(routes)
-#
-#     for i in range(0, upgradeAttempts):
-#         new_routes.sort(key=lambda x: len(x.index))
-#         redumean = mean(len(x) for x in new_routes)
-#
-#         routeToShift = []
-#
-#         # new_routes.sort(key=lambda x: totalRouteDistance(x))
-#
-#         # totalRouteDistance
-#
-#
-#         # for ri in range(0, len(new_routes)):
-#         #     route = new_routes[ri]
-#         #     if i % 2 == 1:
-#         #         if len(route) < redumean:
-#         #             routeToShift = route
-#         #             del new_routes[ri]
-#         #             break
-#         #     else:
-#         #         if len(route) > redumean:
-#         #             routeToShift = route
-#         #             del new_routes[ri]
-#         #             break
-#
-#         # if len(routeToShift) > 0:
-#         #     # assign LT_CUSTOMERS into existing routes
-#         #     for ri in range(0, len(new_routes)):
-#         #         route, routeToShift = assignLT_CUSTOMERS(new_routes[ri], routeToShift, vehicle_capacity)
-#         #         new_routes[ri] = route
-#         #
-#         #     # assign remaining LT_CUSTOMERS into new routes the way MT_CUSTOMERS were assigned
-#         #     if len(routeToShift) > 0:
-#         #         while len(routeToShift) > 0:
-#         #             route, routeToShift = assignMT_CUSTOMERS(routeToShift, vehicle_capacity)
-#         #             new_routes.append(route)
-#
-#         # print(sum(len(x) for x in new_routes))
-#         # print(len(new_routes))
-#     return new_routes
-#
-#
-
-
